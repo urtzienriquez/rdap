@@ -1,0 +1,6 @@
+Package: rdaptest
+Title: A Package for rdap's Tests
+Version: 0.0.1
+Description: Only for testing rdap.
+License: MIT
+Encoding: UTF-8

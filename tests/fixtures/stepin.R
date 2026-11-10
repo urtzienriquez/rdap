@@ -1,0 +1,7 @@
+x <- c(1, 5, 9)
+m <- matrix(1:4, 2)
+s <- sd(x)
+p <- format(structure(list(), class = "rdap_thing"))
+cat("sd:", s, m[, 1], "\n")
+d <- density(x)
+invisible(print(d))

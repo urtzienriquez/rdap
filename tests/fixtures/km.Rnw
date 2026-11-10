@@ -1,0 +1,10 @@
+<<setup, include=FALSE>>=
+library(knitrmini)
+opts_chunk$set(eval = FALSE)
+@
+<<a>>=
+stop("not run: eval is FALSE by default now")
+@
+<<b, eval=TRUE>>=
+cat("ran b\n")
+@

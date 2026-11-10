@@ -1,0 +1,22 @@
+---
+title: "A document"
+params:
+  n: 3
+---
+
+```{r}
+a <- params$n * 2
+```
+
+```{r}
+#| eval: false
+stop("not run")
+```
+
+```{python}
+print("not R")
+```
+
+```{r last}
+cat("a:", a, "\n")
+```

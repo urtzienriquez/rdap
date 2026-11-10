@@ -1,0 +1,4 @@
+In the child.
+<<inchild>>=
+v <- 42
+@

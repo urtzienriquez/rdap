@@ -1,0 +1,23 @@
+\documentclass{article}
+\begin{document}
+<<setup, include=FALSE>>=
+x <- 1
+@
+Some text, \Sexpr{x}.
+<<skip, eval=FALSE>>=
+stop("not run")
+@
+<<calc>>=
+y <- x + 1
+z <- y * 2
+@
+<<again>>=
+<<calc>>
+w <- z + 1
+@
+<<child-doc, child='child.Rnw'>>=
+@
+<<last>>=
+cat("w:", w, "v:", v, "\n")
+@
+\end{document}
