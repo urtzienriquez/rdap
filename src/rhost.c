@@ -52,19 +52,30 @@ static bool cap_read(int which) {
   return true;
 }
 
+// A pipe whose writers are all gone (fd 1/2 pointed at the program's terminal) is at its end for
+// good: poll() reports it (POLLHUP) at once, every time, so it's dropped (else: a busy loop)
 static void *cap_main(void *arg) {
   (void)arg;
   struct pollfd p[2] = {{cap_fd[0], POLLIN, 0}, {cap_fd[1], POLLIN, 0}};
-  for (;;) {
+  int open = 2;
+  while (open > 0) {
     if (poll(p, 2, -1) < 0) {
       if (errno == EINTR) continue;
       return NULL;
     }
     pthread_mutex_lock(&cap_mu);
-    for (int i = 0; i < 2; i++)
-      if (p[i].revents & POLLIN) cap_read(i);
+    for (int i = 0; i < 2; i++) {
+      if (p[i].fd < 0 || !p[i].revents) continue;
+      bool data = false;
+      if (p[i].revents & POLLIN) data = cap_read(i);
+      if (!data && (p[i].revents & (POLLHUP | POLLERR | POLLNVAL))) { // (what was left: read)
+        p[i].fd = -1;
+        open--;
+      }
+    }
     pthread_mutex_unlock(&cap_mu);
   }
+  return NULL;
 }
 
 void capture_start(void) {

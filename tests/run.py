@@ -674,6 +674,51 @@ def endless_evaluation(c):
     eq(c.proc.wait(timeout=5), 0, "terminate gets through")
 
 
+def cpu_ticks(pid):
+    """CPU time (clock ticks: 100 a second) all of a process's threads have used"""
+    total = 0
+    for t in os.listdir(f"/proc/{pid}/task"):
+        st = open(f"/proc/{pid}/task/{t}/stat").read().split(")")[-1].split()
+        total += int(st[11]) + int(st[12])
+    return total
+
+
+def idle_ticks(c, seconds=1.0):
+    a = cpu_ticks(c.proc.pid)
+    time.sleep(seconds)
+    return cpu_ticks(c.proc.pid) - a
+
+
+@test
+def idle_cpu(c):
+    """waiting (stopped, or the program reading input), rdap uses no CPU, with or without a terminal"""
+    c.start(fx("basic.R"), {fx("basic.R"): [2]})
+    c.stopped()
+    if idle_ticks(c) > 10:
+        raise AssertionError("stopped (internal console): busy")
+    c.close()
+    t = Client(terminal=True)
+    try:
+        t.start(fx("basic.R"), {fx("basic.R"): [2]})
+        t.stopped()
+        ticks = idle_ticks(t)
+        if ticks > 10:
+            raise AssertionError(f"stopped (terminal): busy, {ticks} ticks in 1 s")
+    finally:
+        t.close()
+    t = Client(terminal=True)
+    try:
+        t.start(fx("input.R"))
+        t.term_expect("Name: ")
+        ticks = idle_ticks(t)
+        if ticks > 10:
+            raise AssertionError(f"waiting for input (terminal): busy, {ticks} ticks in 1 s")
+        t.term_type("x\n21\n")
+        t.finish()
+    finally:
+        t.close()
+
+
 # ----------------------------------------------------------------------------------------------
 
 
